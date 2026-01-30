@@ -34,14 +34,22 @@ def init_mongo(mongo_uri: str) -> Mongo:
     if _mongo is not None:
         return _mongo
 
-    client = MongoClient(mongo_uri)
-    # get_default_database() uses the DB name from the URI.
+    # Enforce mongodb+srv:// URI for Atlas
+    if not mongo_uri.startswith("mongodb+srv://"):
+        raise RuntimeError("MONGO_URI must use mongodb+srv:// for MongoDB Atlas SRV connection.")
+
+    # Use PyMongo with SRV support and set serverSelectionTimeoutMS
+    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
     db = client.get_default_database()
     if db is None:
         raise RuntimeError(
             "MongoDB URI must include a database name, e.g. "
-            "mongodb://localhost:27017/webhook_repo"
+            "mongodb+srv://<user>:<pass>@cluster.mongodb.net/webhook_repo"
         )
+
+    # Centralized index creation (runs only once at startup)
+    from models.event_model import EventRepository
+    EventRepository.ensure_indexes(db)
 
     _mongo = Mongo(client=client, db=db)
     return _mongo

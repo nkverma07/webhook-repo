@@ -48,11 +48,17 @@ class EventRepository:
     without needing a database.
     """
 
+
     def __init__(self, db: Database):
         self._collection = db["events"]
-        # Helpful index for sorting by timestamp.
-        # Safe to call repeatedly; MongoDB will no-op if it already exists.
-        self._collection.create_index([("timestamp", -1)])
+
+    @staticmethod
+    def ensure_indexes(db: Database):
+        """
+        Create required indexes for the events collection. Call ONCE at app startup.
+        """
+        collection = db["events"]
+        collection.create_index([("timestamp", -1)])
 
     def insert(self, event: Event) -> str:
         result = self._collection.insert_one(event.to_mongo())
