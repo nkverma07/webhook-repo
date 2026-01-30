@@ -35,6 +35,6 @@ Open `http://localhost:5000`.
 In your GitHub repository settings, add a webhook:
 - **Payload URL**: `http://<your-host>:5000/webhook`
 - **Content type**: `application/json`
-- **Events**: push + pull requests (or “send me everything”, the app will ignore unsupported events)
+- **Events**: push + pull requests (or "send me everything", the app will ignore unsupported events)
 
 The backend stores only normalized fields (no raw payload dumps) in MongoDB collection `events`.
